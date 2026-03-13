@@ -1,12 +1,12 @@
-package ru.kreker.natalybot.service.handler;
+package ru.kreker.natalybot.service.handler.message;
 
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.Order;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import ru.kreker.natalybot.model.UserStatus;
-import ru.kreker.natalybot.service.MessageService;
 import ru.kreker.natalybot.service.UserVerificationService;
 import ru.kreker.natalybot.telegram.TelegramSender;
 
@@ -14,15 +14,20 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class MessageHandler {
-    private final MessageService messageService;
+public class FirstVerificationMessageHandler implements MessageHandlerStep {
     private final UserVerificationService verificationService;
     private final TelegramSender sender;
 
-    public void handle(Message message) {
-        String userId = message.getFrom().getId().toString();
-        String chatId = message.getChatId().toString();
+    @Override
+    public int getOrder() {
+        return 10;
+    }
 
+    @Override
+    public boolean handle(MessageContext messageContext) {
+        Message message = messageContext.message();
+        String userId = messageContext.userId();
+        String chatId = messageContext.chatId();
         UserStatus status = verificationService.checkUserStatus(userId, chatId);
 
         if (status == null) {
@@ -42,8 +47,6 @@ public class MessageHandler {
                 sender.sendMessageWithKeyboard(chatId,
                         "Для участия в чате пройдите капчу:", keyboard);
             } else if (message.getChat().isUserChat()) {
-                sender.deleteMessage(chatId, message.getMessageId().toString());
-
                 InlineKeyboardMarkup keyboard = new InlineKeyboardMarkup();
                 InlineKeyboardButton button = new InlineKeyboardButton("Пройти капчу");
                 button.setCallbackData("VERIFY " + userId);
@@ -53,16 +56,10 @@ public class MessageHandler {
                         "Нажмите кнопку, чтобы пройти капчу:", keyboard);
             }
 
-            return;
-        }
-
-        if (status == UserStatus.PENDING) {
             sender.deleteMessage(chatId, message.getMessageId().toString());
-            sender.sendMessage(chatId, "Сначала пройдите капчу.");
-            return;
+            return false;
         }
 
-        String response = messageService.process(message.getText(), userId, chatId);
-        sender.sendMessage(chatId, response);
+        return true;
     }
 }

@@ -1,4 +1,16 @@
 telegram:
   bot:
-    username: Nataly_invalidBot
-    token: 8702109910:AAFm4mIJ6e3TQi4LUU8T_m8lB9VHVuabjY4
+    username: ${TELEGRAM_USERNAME}
+    token: ${TELEGRAM_TOKEN}
+
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5434/botdb}
+    username: ${SPRING_DATASOURCE_USERNAME:botuser}
+    password: ${SPRING_DATASOURCE_PASSWORD:botpass}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true

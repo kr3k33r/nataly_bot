@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.kreker.natalybot.service.handler.CallbackHandler;
-import ru.kreker.natalybot.service.handler.MessageHandler;
+import ru.kreker.natalybot.service.handler.message.MessageHandler;
 
 @Component
 @RequiredArgsConstructor
